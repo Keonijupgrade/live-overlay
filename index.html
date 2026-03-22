@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <title>KeoniJ Live Overlay</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -68,22 +69,18 @@ body {
 }
 @keyframes scroll-left { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 
-/* ── LEFT STRIP — segment name only, slim ────────────────────── */
+/* ── LEFT ACCENT STRIP ───────────────────────────────────────── */
 .left-strip {
   position: absolute;
-  top: 134px;
-  left: 0;
-  width: 8px;                        /* just a colored bar */
-  bottom: 180px;
+  top: 134px; left: 0; width: 8px; bottom: 180px;
   background: linear-gradient(180deg, #ff3b00 0%, rgba(255,59,0,0.1) 100%);
   z-index: 90;
 }
 
-/* Segment badge — small pill that sits just inside the left edge */
+/* ── SEGMENT BADGE ───────────────────────────────────────────── */
 .seg-badge {
   position: absolute;
-  top: 148px;
-  left: 12px;
+  top: 148px; left: 12px;
   background: rgba(13,13,13,0.88);
   border-left: 3px solid #ff3b00;
   padding: 10px 16px 10px 14px;
@@ -97,17 +94,13 @@ body {
 /* ── BOTTOM BAR ──────────────────────────────────────────────── */
 .bottom-bar {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 175px;
+  bottom: 0; left: 0; right: 0; height: 175px;
   background: linear-gradient(0deg, rgba(13,13,13,0.97) 60%, transparent 100%);
   z-index: 100;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  display: flex; flex-direction: column; justify-content: flex-end;
   padding: 0 28px 28px;
 }
 
-/* Progress bar */
 .progress-row {
   display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
 }
@@ -121,7 +114,6 @@ body {
 }
 .progress-time { font-size: 13px; font-weight: 700; color: #888; font-family: 'Courier New', monospace; letter-spacing: 1px; white-space: nowrap; }
 
-/* Segment nav */
 .seg-nav {
   display: flex; align-items: center; gap: 0; margin-bottom: 12px;
 }
@@ -130,8 +122,7 @@ body {
 }
 .seg-dot {
   width: 10px; height: 10px; border-radius: 50%;
-  background: #2a2a2a; border: 2px solid #444;
-  transition: all 0.4s;
+  background: #2a2a2a; border: 2px solid #444; transition: all 0.4s;
 }
 .seg-item.active .seg-dot { background: #ff3b00; border-color: #ff3b00; box-shadow: 0 0 8px #ff3b00aa; }
 .seg-item.done  .seg-dot  { background: #555; border-color: #666; }
@@ -141,7 +132,6 @@ body {
 .seg-connector { flex: 1; height: 1px; background: #2a2a2a; margin-bottom: 15px; }
 .seg-connector.done { background: #555; }
 
-/* Tagline */
 .tagline {
   text-align: center; font-size: 17px; font-weight: 700;
   color: #555; letter-spacing: 3px; text-transform: uppercase;
@@ -149,7 +139,7 @@ body {
 }
 .tagline span { color: #ff3b00; }
 
-/* ── EQ BARS (decorative, very faint) ───────────────────────── */
+/* ── EQ BARS ─────────────────────────────────────────────────── */
 .eq-wrap {
   position: absolute;
   bottom: 178px; left: 50%; transform: translateX(-50%);
@@ -188,10 +178,10 @@ body {
   </div>
 </div>
 
-<!-- LEFT ACCENT STRIP -->
+<!-- LEFT STRIP -->
 <div class="left-strip"></div>
 
-<!-- SEGMENT BADGE (small, left edge) -->
+<!-- SEGMENT BADGE -->
 <div class="seg-badge">
   <div class="seg-badge-label">Now On Air</div>
   <div class="seg-badge-name" id="seg-name">Island Check-In</div>
@@ -203,136 +193,98 @@ body {
 
 <!-- BOTTOM BAR -->
 <div class="bottom-bar">
-  <!-- Progress -->
   <div class="progress-row">
     <span class="progress-time" id="elapsed">0:00</span>
     <div class="progress-track"><div class="progress-fill" id="pfill"></div></div>
     <span class="progress-time">60:00</span>
   </div>
-
-  <!-- Segment nav -->
   <div class="seg-nav" id="seg-nav">
-    <div class="seg-item active" data-i="0">
-      <div class="seg-dot"></div>
-      <div class="seg-dot-label">Check-In</div>
-    </div>
+    <div class="seg-item active" data-i="0"><div class="seg-dot"></div><div class="seg-dot-label">Check-In</div></div>
     <div class="seg-connector" data-c="0"></div>
-    <div class="seg-item" data-i="1">
-      <div class="seg-dot"></div>
-      <div class="seg-dot-label">The Take</div>
-    </div>
+    <div class="seg-item" data-i="1"><div class="seg-dot"></div><div class="seg-dot-label">The Take</div></div>
     <div class="seg-connector" data-c="1"></div>
-    <div class="seg-item" data-i="2">
-      <div class="seg-dot"></div>
-      <div class="seg-dot-label">Body Talk</div>
-    </div>
+    <div class="seg-item" data-i="2"><div class="seg-dot"></div><div class="seg-dot-label">Body Talk</div></div>
     <div class="seg-connector" data-c="2"></div>
-    <div class="seg-item" data-i="3">
-      <div class="seg-dot"></div>
-      <div class="seg-dot-label">Tool Time</div>
-    </div>
+    <div class="seg-item" data-i="3"><div class="seg-dot"></div><div class="seg-dot-label">Tool Time</div></div>
     <div class="seg-connector" data-c="3"></div>
-    <div class="seg-item" data-i="4">
-      <div class="seg-dot"></div>
-      <div class="seg-dot-label">Mahalo</div>
-    </div>
+    <div class="seg-item" data-i="4"><div class="seg-dot"></div><div class="seg-dot-label">Mahalo</div></div>
   </div>
-
-  <!-- Tagline -->
   <div class="tagline">Wrong turns, right hands &nbsp;<span>•</span>&nbsp; <span>Upgrade Everything</span></div>
 </div>
 
 <script>
-// ── Segment definitions ───────────────────────────────────────
+const SUPABASE_URL = 'https://yznpnwkgqqavfnllzmxd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_cPrO57tuEyTU6pQ6hXGwRg_lhB5XRf-';
+
 const SEGMENTS = [
-  { name: "Island Check-In",    time: "0:00 – 0:10",  navIdx: 0 },
-  { name: "Music Break",        time: "0:10 – 0:12",  navIdx: 0 },
-  { name: "The Take",           time: "0:12 – 0:32",  navIdx: 1 },
-  { name: "Music Break",        time: "0:32 – 0:34",  navIdx: 1 },
-  { name: "Body Talk",          time: "0:34 – 0:42",  navIdx: 2 },
-  { name: "Tool Time",          time: "0:42 – 0:55",  navIdx: 3 },
-  { name: "Mahalo Moment",      time: "0:55 – 1:00",  navIdx: 4 },
+  { name: "Island Check-In",  time: "0:00 – 0:10",  navIdx: 0 },
+  { name: "Music Break",      time: "0:10 – 0:12",  navIdx: 0 },
+  { name: "The Take",         time: "0:12 – 0:32",  navIdx: 1 },
+  { name: "Music Break",      time: "0:32 – 0:34",  navIdx: 1 },
+  { name: "Body Talk",        time: "0:34 – 0:42",  navIdx: 2 },
+  { name: "Tool Time",        time: "0:42 – 0:55",  navIdx: 3 },
+  { name: "Mahalo Moment",    time: "0:55 – 1:00",  navIdx: 4 },
 ];
 
 let currentSeg = 0;
 let startTime  = Date.now();
-let segStartTime = Date.now(); // when current segment started (for elapsed within seg)
 
-// ── BroadcastChannel — listens for commands from control panel ─
-const bc = new BroadcastChannel("keonij_overlay");
-bc.onmessage = (e) => {
-  if (e.data.type === "next")  advanceSeg(1);
-  if (e.data.type === "prev")  advanceSeg(-1);
-  if (e.data.type === "goto")  goToSeg(e.data.index);
-  if (e.data.type === "reset") resetSession();
-};
+// ── Supabase Realtime ─────────────────────────────────────────
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const channel = sb.channel('keonij-overlay');
 
-function advanceSeg(dir) {
-  goToSeg(Math.max(0, Math.min(SEGMENTS.length - 1, currentSeg + dir)));
-}
+channel
+  .on('broadcast', { event: 'segment' }, ({ payload }) => {
+    if (payload.type === 'goto')  goToSeg(payload.index);
+    if (payload.type === 'next')  goToSeg(Math.min(currentSeg + 1, SEGMENTS.length - 1));
+    if (payload.type === 'prev')  goToSeg(Math.max(currentSeg - 1, 0));
+    if (payload.type === 'reset') { startTime = Date.now(); goToSeg(0); }
+  })
+  .subscribe();
+
 function goToSeg(idx) {
   currentSeg = idx;
-  segStartTime = Date.now();
-  renderSeg();
-}
-function resetSession() {
-  startTime = Date.now();
-  segStartTime = Date.now();
-  currentSeg = 0;
-  renderSeg();
-}
+  const s = SEGMENTS[idx];
+  document.getElementById('seg-name').textContent = s.name;
+  document.getElementById('seg-time').textContent = s.time;
 
-// ── Render ────────────────────────────────────────────────────
-function renderSeg() {
-  const s = SEGMENTS[currentSeg];
-  document.getElementById("seg-name").textContent = s.name;
-  document.getElementById("seg-time").textContent = s.time;
-
-  const items = document.querySelectorAll(".seg-item");
-  const conns = document.querySelectorAll(".seg-connector");
-  items.forEach((el, i) => {
-    el.classList.remove("active","done");
-    if (i === s.navIdx)      el.classList.add("active");
-    else if (i < s.navIdx)   el.classList.add("done");
+  document.querySelectorAll('.seg-item').forEach((el, i) => {
+    el.classList.remove('active','done');
+    if (i === s.navIdx)     el.classList.add('active');
+    else if (i < s.navIdx)  el.classList.add('done');
   });
-  conns.forEach((el, i) => {
-    el.classList.remove("done");
-    if (i < s.navIdx) el.classList.add("done");
+  document.querySelectorAll('.seg-connector').forEach((el, i) => {
+    el.classList.toggle('done', i < s.navIdx);
   });
 }
 
 function tick() {
-  // Clock
   const now = new Date();
-  const h = now.getHours(), m = String(now.getMinutes()).padStart(2,"0");
-  const ampm = h >= 12 ? "PM" : "AM";
-  document.getElementById("clock").textContent = ((h+11)%12+1) + ":" + m + " " + ampm;
+  const h = now.getHours(), m = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = ((h+11)%12+1) + ':' + m + ' ' + (h>=12?'PM':'AM');
 
-  // Elapsed
   const elMs  = Date.now() - startTime;
   const elMin = elMs / 60000;
   const em = Math.floor(elMin);
   const es = Math.floor((elMin - em) * 60);
-  document.getElementById("elapsed").textContent = em + ":" + String(es).padStart(2,"0");
-
-  // Progress bar (60 min total)
-  document.getElementById("pfill").style.width = Math.min(elMin / 60 * 100, 100) + "%";
+  document.getElementById('elapsed').textContent = em + ':' + String(es).padStart(2,'0');
+  document.getElementById('pfill').style.width = Math.min(elMin / 60 * 100, 100) + '%';
 }
 
-// ── EQ bars ───────────────────────────────────────────────────
-const eq = document.getElementById("eq");
+// EQ bars
+const eq = document.getElementById('eq');
 for (let i = 0; i < 36; i++) {
-  const b = document.createElement("div");
-  b.className = "eq-bar";
+  const b = document.createElement('div');
+  b.className = 'eq-bar';
   const h = Math.floor(Math.random()*32)+8;
   const d = (Math.random()*0.5+0.4).toFixed(2);
-  b.style.setProperty("--h", h+"px");
-  b.style.setProperty("--d", d+"s");
-  b.style.animationDelay = (Math.random()*0.5).toFixed(2)+"s";
+  b.style.setProperty('--h', h+'px');
+  b.style.setProperty('--d', d+'s');
+  b.style.animationDelay = (Math.random()*0.5).toFixed(2)+'s';
   eq.appendChild(b);
 }
 
-renderSeg();
 tick();
 setInterval(tick, 10000);
 </script>
