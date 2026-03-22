@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KeoniJ — Show Control</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d0d0d;
+    color: #fff;
+    font-family: 'Arial Black', Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    gap: 24px;
+  }
+
+  h1 { font-size: 22px; color: #ff3b00; letter-spacing: 4px; text-transform: uppercase; text-align: center; }
+  .sub { font-size: 12px; color: #555; letter-spacing: 3px; text-transform: uppercase; text-align: center; margin-top: -16px; }
+
+  /* Current segment display */
+  .now-playing {
+    background: #1a1a1a;
+    border: 2px solid #ff3b00;
+    border-radius: 8px;
+    padding: 18px 28px;
+    text-align: center;
+    width: 100%;
+    max-width: 420px;
+  }
+  .np-label { font-size: 11px; color: #ff3b00; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 6px; }
+  .np-name  { font-size: 28px; font-weight: 900; color: #fff; }
+  .np-time  { font-size: 13px; color: #888; margin-top: 4px; font-family: 'Courier New', monospace; }
+  .np-index { font-size: 11px; color: #444; margin-top: 6px; letter-spacing: 2px; }
+
+  /* Prev / Next buttons */
+  .nav-btns {
+    display: flex; gap: 16px; width: 100%; max-width: 420px;
+  }
+  .btn {
+    flex: 1; padding: 18px; border: none; border-radius: 8px;
+    font-size: 18px; font-weight: 900; letter-spacing: 2px;
+    cursor: pointer; text-transform: uppercase; transition: opacity 0.15s;
+  }
+  .btn:active { opacity: 0.7; }
+  .btn-prev { background: #2a2a2a; color: #aaa; }
+  .btn-next { background: #ff3b00; color: #fff; font-size: 20px; }
+
+  /* Segment list — tap to jump */
+  .seg-list {
+    width: 100%; max-width: 420px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .seg-list-label { font-size: 11px; color: #444; letter-spacing: 4px; text-transform: uppercase; text-align: center; margin-bottom: 4px; }
+  .seg-btn {
+    background: #1a1a1a; border: 1px solid #2a2a2a;
+    border-radius: 6px; padding: 14px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .seg-btn:active { background: #222; }
+  .seg-btn.active { border-color: #ff3b00; background: #1f0a00; }
+  .seg-btn-name { font-size: 16px; font-weight: 900; color: #fff; }
+  .seg-btn.active .seg-btn-name { color: #ff3b00; }
+  .seg-btn-time { font-size: 12px; color: #555; font-family: 'Courier New', monospace; }
+  .seg-btn.active .seg-btn-time { color: #ff5522; }
+
+  /* Reset */
+  .btn-reset {
+    width: 100%; max-width: 420px;
+    background: transparent; border: 1px solid #333;
+    color: #555; padding: 14px; border-radius: 8px;
+    font-size: 14px; font-weight: 700; letter-spacing: 2px;
+    cursor: pointer; text-transform: uppercase; transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-reset:active { border-color: #ff3b00; color: #ff3b00; }
+
+  .status { font-size: 11px; color: #333; letter-spacing: 2px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<h1>KeoniJ Show Control</h1>
+<p class="sub">Tap a segment to jump — overlay updates instantly</p>
+
+<!-- Now playing -->
+<div class="now-playing">
+  <div class="np-label">Now On Air</div>
+  <div class="np-name" id="np-name">Island Check-In</div>
+  <div class="np-time" id="np-time">0:00 – 0:10</div>
+  <div class="np-index" id="np-index">Segment 1 of 7</div>
+</div>
+
+<!-- Prev / Next -->
+<div class="nav-btns">
+  <button class="btn btn-prev" onclick="send('prev')">&#8592; Prev</button>
+  <button class="btn btn-next" onclick="send('next')">Next &#8594;</button>
+</div>
+
+<!-- Segment list -->
+<div class="seg-list">
+  <div class="seg-list-label">Jump to segment</div>
+  <div id="seg-buttons"></div>
+</div>
+
+<!-- Reset -->
+<button class="btn-reset" onclick="send('reset')">&#8635; Reset Session Timer</button>
+
+<div class="status" id="status">Ready</div>
+
+<script>
+const SEGMENTS = [
+  { name: "Island Check-In",  time: "0:00 – 0:10" },
+  { name: "Music Break",      time: "0:10 – 0:12" },
+  { name: "The Take",         time: "0:12 – 0:32" },
+  { name: "Music Break",      time: "0:32 – 0:34" },
+  { name: "Body Talk",        time: "0:34 – 0:42" },
+  { name: "Tool Time",        time: "0:42 – 0:55" },
+  { name: "Mahalo Moment",    time: "0:55 – 1:00" },
+];
+
+let current = 0;
+const bc = new BroadcastChannel("keonij_overlay");
+
+// Build segment buttons
+const container = document.getElementById("seg-buttons");
+SEGMENTS.forEach((s, i) => {
+  const btn = document.createElement("div");
+  btn.className = "seg-btn" + (i === 0 ? " active" : "");
+  btn.dataset.i = i;
+  btn.innerHTML = `<span class="seg-btn-name">${s.name}</span><span class="seg-btn-time">${s.time}</span>`;
+  btn.onclick = () => { send("goto", i); };
+  container.appendChild(btn);
+});
+
+function send(type, index) {
+  const msg = { type };
+  if (index !== undefined) msg.index = index;
+  bc.postMessage(msg);
+
+  if (type === "next")  updateUI(Math.min(current + 1, SEGMENTS.length - 1));
+  if (type === "prev")  updateUI(Math.max(current - 1, 0));
+  if (type === "goto")  updateUI(index);
+  if (type === "reset") { updateUI(0); flash("Session reset"); }
+  else flash("Sent → " + (type === "goto" ? SEGMENTS[index].name : type));
+}
+
+function updateUI(idx) {
+  current = idx;
+  const s = SEGMENTS[idx];
+  document.getElementById("np-name").textContent  = s.name;
+  document.getElementById("np-time").textContent  = s.time;
+  document.getElementById("np-index").textContent = "Segment " + (idx+1) + " of " + SEGMENTS.length;
+  document.querySelectorAll(".seg-btn").forEach((b, i) => {
+    b.classList.toggle("active", i === idx);
+  });
+}
+
+function flash(msg) {
+  const el = document.getElementById("status");
+  el.textContent = msg;
+  el.style.color = "#ff3b00";
+  setTimeout(() => { el.style.color = "#333"; el.textContent = "Ready"; }, 1500);
+}
+</script>
+</body>
+</html>
