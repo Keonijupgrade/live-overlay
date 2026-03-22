@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>KeoniJ Live Overlay</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  width: 1080px;
+  height: 1920px;
+  background: transparent;
+  font-family: 'Arial Black', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── TOP BAR ─────────────────────────────────────────────────── */
+.top-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 96px;
+  background: linear-gradient(90deg, rgba(13,13,13,0.97) 0%, rgba(20,20,20,0.95) 100%);
+  border-bottom: 3px solid #ff3b00;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 100;
+}
+
+.station-id { display: flex; flex-direction: column; line-height: 1.1; }
+.station-call { font-size: 48px; font-weight: 900; color: #fff; letter-spacing: 4px; }
+.station-sub  { font-size: 14px; font-weight: 700; color: #ff3b00; letter-spacing: 5px; text-transform: uppercase; }
+
+.live-badge {
+  display: flex; align-items: center; gap: 9px;
+  background: #ff3b00; padding: 9px 22px; border-radius: 4px;
+}
+.live-dot {
+  width: 12px; height: 12px; background: #fff; border-radius: 50%;
+  animation: blink 1.2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
+.live-text { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: 4px; }
+
+.top-clock { font-size: 28px; font-weight: 700; color: #ccc; font-family: 'Courier New', monospace; letter-spacing: 2px; }
+
+/* ── TICKER ──────────────────────────────────────────────────── */
+.ticker-bar {
+  position: absolute;
+  top: 96px; left: 0; right: 0; height: 38px;
+  background: #ff3b00;
+  display: flex; align-items: center; overflow: hidden;
+  z-index: 99;
+}
+.ticker-label {
+  background: #0d0d0d; color: #ff3b00;
+  font-size: 13px; font-weight: 900; letter-spacing: 3px;
+  padding: 0 16px; height: 100%;
+  display: flex; align-items: center; white-space: nowrap; flex-shrink: 0;
+}
+.ticker-content {
+  white-space: nowrap;
+  animation: scroll-left 30s linear infinite;
+  font-size: 14px; font-weight: 700; color: #fff; letter-spacing: 1.5px;
+  padding-left: 40px;
+}
+@keyframes scroll-left { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+/* ── LEFT STRIP — segment name only, slim ────────────────────── */
+.left-strip {
+  position: absolute;
+  top: 134px;
+  left: 0;
+  width: 8px;                        /* just a colored bar */
+  bottom: 180px;
+  background: linear-gradient(180deg, #ff3b00 0%, rgba(255,59,0,0.1) 100%);
+  z-index: 90;
+}
+
+/* Segment badge — small pill that sits just inside the left edge */
+.seg-badge {
+  position: absolute;
+  top: 148px;
+  left: 12px;
+  background: rgba(13,13,13,0.88);
+  border-left: 3px solid #ff3b00;
+  padding: 10px 16px 10px 14px;
+  z-index: 91;
+  max-width: 260px;
+}
+.seg-badge-label { font-size: 10px; font-weight: 700; color: #ff3b00; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 4px; }
+.seg-badge-name  { font-size: 26px; font-weight: 900; color: #fff; line-height: 1.1; text-transform: uppercase; }
+.seg-badge-time  { font-size: 11px; font-weight: 700; color: #888; letter-spacing: 2px; margin-top: 4px; font-family: 'Courier New', monospace; }
+
+/* ── BOTTOM BAR ──────────────────────────────────────────────── */
+.bottom-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 175px;
+  background: linear-gradient(0deg, rgba(13,13,13,0.97) 60%, transparent 100%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 28px 28px;
+}
+
+/* Progress bar */
+.progress-row {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+.progress-track {
+  flex: 1; height: 5px; background: #2a2a2a; border-radius: 3px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #ff3b00, #ff7a00);
+  border-radius: 3px; transition: width 2s linear;
+}
+.progress-time { font-size: 13px; font-weight: 700; color: #888; font-family: 'Courier New', monospace; letter-spacing: 1px; white-space: nowrap; }
+
+/* Segment nav */
+.seg-nav {
+  display: flex; align-items: center; gap: 0; margin-bottom: 12px;
+}
+.seg-item {
+  display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1;
+}
+.seg-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #2a2a2a; border: 2px solid #444;
+  transition: all 0.4s;
+}
+.seg-item.active .seg-dot { background: #ff3b00; border-color: #ff3b00; box-shadow: 0 0 8px #ff3b00aa; }
+.seg-item.done  .seg-dot  { background: #555; border-color: #666; }
+.seg-dot-label { font-size: 10px; font-weight: 700; color: #444; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; }
+.seg-item.active .seg-dot-label { color: #ff3b00; }
+.seg-item.done  .seg-dot-label  { color: #666; }
+.seg-connector { flex: 1; height: 1px; background: #2a2a2a; margin-bottom: 15px; }
+.seg-connector.done { background: #555; }
+
+/* Tagline */
+.tagline {
+  text-align: center; font-size: 17px; font-weight: 700;
+  color: #555; letter-spacing: 3px; text-transform: uppercase;
+  border-top: 1px solid #1e1e1e; padding-top: 10px;
+}
+.tagline span { color: #ff3b00; }
+
+/* ── EQ BARS (decorative, very faint) ───────────────────────── */
+.eq-wrap {
+  position: absolute;
+  bottom: 178px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: flex-end; gap: 4px; height: 40px;
+  opacity: 0.18; z-index: 80; pointer-events: none;
+}
+.eq-bar {
+  width: 5px; background: linear-gradient(0deg, #ff3b00, #ff7a00);
+  border-radius: 2px 2px 0 0;
+  animation: eq var(--d,0.8s) ease-in-out infinite alternate;
+}
+@keyframes eq { from{height:4px} to{height:var(--h,30px)} }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="station-id">
+    <span class="station-call">KEONIJ</span>
+    <span class="station-sub">Upgrade Everything</span>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    <span class="live-text">LIVE</span>
+  </div>
+  <div class="top-clock" id="clock">--:--</div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-label">ON AIR</div>
+  <div class="ticker-content">
+    ISLAND CHECK-IN &nbsp;•&nbsp; THE TAKE &nbsp;•&nbsp; BODY TALK &nbsp;•&nbsp; TOOL TIME &nbsp;•&nbsp; MAHALO MOMENT &nbsp;•&nbsp; WRONG TURNS, RIGHT HANDS &nbsp;•&nbsp; UPGRADE EVERYTHING &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    ISLAND CHECK-IN &nbsp;•&nbsp; THE TAKE &nbsp;•&nbsp; BODY TALK &nbsp;•&nbsp; TOOL TIME &nbsp;•&nbsp; MAHALO MOMENT &nbsp;•&nbsp; WRONG TURNS, RIGHT HANDS &nbsp;•&nbsp; UPGRADE EVERYTHING &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </div>
+</div>
+
+<!-- LEFT ACCENT STRIP -->
+<div class="left-strip"></div>
+
+<!-- SEGMENT BADGE (small, left edge) -->
+<div class="seg-badge">
+  <div class="seg-badge-label">Now On Air</div>
+  <div class="seg-badge-name" id="seg-name">Island Check-In</div>
+  <div class="seg-badge-time" id="seg-time">0:00 – 0:10</div>
+</div>
+
+<!-- EQ BARS -->
+<div class="eq-wrap" id="eq"></div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <!-- Progress -->
+  <div class="progress-row">
+    <span class="progress-time" id="elapsed">0:00</span>
+    <div class="progress-track"><div class="progress-fill" id="pfill"></div></div>
+    <span class="progress-time">60:00</span>
+  </div>
+
+  <!-- Segment nav -->
+  <div class="seg-nav" id="seg-nav">
+    <div class="seg-item active" data-i="0">
+      <div class="seg-dot"></div>
+      <div class="seg-dot-label">Check-In</div>
+    </div>
+    <div class="seg-connector" data-c="0"></div>
+    <div class="seg-item" data-i="1">
+      <div class="seg-dot"></div>
+      <div class="seg-dot-label">The Take</div>
+    </div>
+    <div class="seg-connector" data-c="1"></div>
+    <div class="seg-item" data-i="2">
+      <div class="seg-dot"></div>
+      <div class="seg-dot-label">Body Talk</div>
+    </div>
+    <div class="seg-connector" data-c="2"></div>
+    <div class="seg-item" data-i="3">
+      <div class="seg-dot"></div>
+      <div class="seg-dot-label">Tool Time</div>
+    </div>
+    <div class="seg-connector" data-c="3"></div>
+    <div class="seg-item" data-i="4">
+      <div class="seg-dot"></div>
+      <div class="seg-dot-label">Mahalo</div>
+    </div>
+  </div>
+
+  <!-- Tagline -->
+  <div class="tagline">Wrong turns, right hands &nbsp;<span>•</span>&nbsp; <span>Upgrade Everything</span></div>
+</div>
+
+<script>
+// ── Segment definitions ───────────────────────────────────────
+const SEGMENTS = [
+  { name: "Island Check-In",    time: "0:00 – 0:10",  navIdx: 0 },
+  { name: "Music Break",        time: "0:10 – 0:12",  navIdx: 0 },
+  { name: "The Take",           time: "0:12 – 0:32",  navIdx: 1 },
+  { name: "Music Break",        time: "0:32 – 0:34",  navIdx: 1 },
+  { name: "Body Talk",          time: "0:34 – 0:42",  navIdx: 2 },
+  { name: "Tool Time",          time: "0:42 – 0:55",  navIdx: 3 },
+  { name: "Mahalo Moment",      time: "0:55 – 1:00",  navIdx: 4 },
+];
+
+let currentSeg = 0;
+let startTime  = Date.now();
+let segStartTime = Date.now(); // when current segment started (for elapsed within seg)
+
+// ── BroadcastChannel — listens for commands from control panel ─
+const bc = new BroadcastChannel("keonij_overlay");
+bc.onmessage = (e) => {
+  if (e.data.type === "next")  advanceSeg(1);
+  if (e.data.type === "prev")  advanceSeg(-1);
+  if (e.data.type === "goto")  goToSeg(e.data.index);
+  if (e.data.type === "reset") resetSession();
+};
+
+function advanceSeg(dir) {
+  goToSeg(Math.max(0, Math.min(SEGMENTS.length - 1, currentSeg + dir)));
+}
+function goToSeg(idx) {
+  currentSeg = idx;
+  segStartTime = Date.now();
+  renderSeg();
+}
+function resetSession() {
+  startTime = Date.now();
+  segStartTime = Date.now();
+  currentSeg = 0;
+  renderSeg();
+}
+
+// ── Render ────────────────────────────────────────────────────
+function renderSeg() {
+  const s = SEGMENTS[currentSeg];
+  document.getElementById("seg-name").textContent = s.name;
+  document.getElementById("seg-time").textContent = s.time;
+
+  const items = document.querySelectorAll(".seg-item");
+  const conns = document.querySelectorAll(".seg-connector");
+  items.forEach((el, i) => {
+    el.classList.remove("active","done");
+    if (i === s.navIdx)      el.classList.add("active");
+    else if (i < s.navIdx)   el.classList.add("done");
+  });
+  conns.forEach((el, i) => {
+    el.classList.remove("done");
+    if (i < s.navIdx) el.classList.add("done");
+  });
+}
+
+function tick() {
+  // Clock
+  const now = new Date();
+  const h = now.getHours(), m = String(now.getMinutes()).padStart(2,"0");
+  const ampm = h >= 12 ? "PM" : "AM";
+  document.getElementById("clock").textContent = ((h+11)%12+1) + ":" + m + " " + ampm;
+
+  // Elapsed
+  const elMs  = Date.now() - startTime;
+  const elMin = elMs / 60000;
+  const em = Math.floor(elMin);
+  const es = Math.floor((elMin - em) * 60);
+  document.getElementById("elapsed").textContent = em + ":" + String(es).padStart(2,"0");
+
+  // Progress bar (60 min total)
+  document.getElementById("pfill").style.width = Math.min(elMin / 60 * 100, 100) + "%";
+}
+
+// ── EQ bars ───────────────────────────────────────────────────
+const eq = document.getElementById("eq");
+for (let i = 0; i < 36; i++) {
+  const b = document.createElement("div");
+  b.className = "eq-bar";
+  const h = Math.floor(Math.random()*32)+8;
+  const d = (Math.random()*0.5+0.4).toFixed(2);
+  b.style.setProperty("--h", h+"px");
+  b.style.setProperty("--d", d+"s");
+  b.style.animationDelay = (Math.random()*0.5).toFixed(2)+"s";
+  eq.appendChild(b);
+}
+
+renderSeg();
+tick();
+setInterval(tick, 10000);
+</script>
+</body>
+</html>
