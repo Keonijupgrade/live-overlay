@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="names.js"></script>
+<title>KeoniJ — Local Name Generator Overlay</title>
+<style>html,body{margin:0!important;padding:0!important;background:transparent!important;overflow:hidden!important;font-family:'Arial Black',Arial,sans-serif!important;color:#fff!important}a{color:#ff3b00}a:hover{color:#ff7a00}
+@keyframes ngBlink{0%,100%{opacity:1}50%{opacity:.15}}
+@keyframes ngSlam{0%{transform:scale(1.6) rotate(-2deg);opacity:0;filter:blur(12px)}55%{transform:scale(.95) rotate(.5deg);opacity:1;filter:blur(0)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes ngRise{0%{transform:translateY(28px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes ngReel{0%{transform:translateY(-16px);opacity:.15;filter:blur(6px)}50%{opacity:.95;filter:blur(1px)}100%{transform:translateY(16px);opacity:.15;filter:blur(6px)}}
+@keyframes ngSweep{0%{transform:translateX(-40%)}100%{transform:translateX(140%)}}
+@keyframes ngRing{0%{transform:scale(.55);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+@keyframes ngCard{0%{transform:translateY(60px);opacity:0}100%{transform:translateY(0);opacity:1}}
+</style>
+</helmet>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" fill="#0d0d0d"></rect><circle cx="120" cy="120" r="74" fill="#ff3b00"></circle><text x="120" y="148" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="70" fill="#fff">KJ</text></svg></template>
+<div style="position:relative;width:1080px;height:1920px;overflow:hidden;background:transparent;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 40px;boxSizing:border-box">
+
+<div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;height:64px;background:#ff3b00;z-index:99">
+<div style="background:#0d0d0d;color:#ff3b00;font-size:20px;font-weight:900;letter-spacing:4px;padding:0 22px;height:100%;display:flex;align-items:center;white-space:nowrap">NAME GENERATOR</div>
+<div style="display:flex;align-items:center;gap:14px;padding:0 26px;font-size:20px;font-weight:900;letter-spacing:3px;color:#fff;white-space:nowrap"><span style="width:14px;height:14px;border-radius:50%;background:#fff;animation:ngBlink 1.2s ease-in-out infinite"></span>DROP YOUR NAME IN CHAT</div>
+<div style="margin-left:auto;padding:0 26px;font-family:'Courier New',monospace;font-size:22px;font-weight:700;color:#0d0d0d;letter-spacing:2px;white-space:nowrap">{{ count }} NAMED</div>
+</div>
+
+<div style="position:relative;width:100%;max-width:1000px;boxSizing:border-box;background:rgba(13,13,13,.92);border-left:10px solid #ff3b00;padding:64px 56px;animation:ngCard .5s cubic-bezier(.2,.8,.2,1) both">
+<sc-if value="{{ isIdle }}" hint-placeholder-val="{{ true }}">
+<div>
+<div style="font-size:22px;font-weight:700;color:#ff3b00;letter-spacing:6px;text-transform:uppercase">Waiting on chat</div>
+<div style="font-size:104px;font-weight:900;line-height:1.02;letter-spacing:-1px;text-transform:uppercase;margin-top:24px;color:#fff">What's your<br />local name?</div>
+<div style="font-size:26px;font-weight:700;color:#888;letter-spacing:2px;margin-top:28px;line-height:1.4">Type your first name below and I run it. Real Hawaiian if you got one — pidgin if you don't.</div>
+</div>
+</sc-if>
+<sc-if value="{{ isSpinning }}">
+<div style="position:relative;overflow:hidden">
+<div style="font-size:22px;font-weight:700;color:#ff3b00;letter-spacing:6px;text-transform:uppercase;animation:ngBlink .7s ease-in-out infinite">Running it…</div>
+<div style="font-size:112px;font-weight:900;line-height:1.05;text-transform:uppercase;margin-top:24px;color:#fff;animation:ngReel .16s linear infinite;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ reelName }}</div>
+<div style="position:absolute;inset:0;width:38%;background:linear-gradient(90deg,transparent,rgba(255,59,0,.35),transparent);animation:ngSweep .8s linear infinite;pointer-events:none"></div>
+</div>
+</sc-if>
+<sc-if value="{{ hasResult }}">
+<div style="position:relative">
+<div style="position:absolute;left:40%;top:40%;width:420px;height:420px;margin:-210px 0 0 -210px;border:8px solid #ff3b00;border-radius:50%;animation:ngRing .9s ease-out both;pointer-events:none"></div>
+<div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+<span style="font-size:20px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:#fff;background:#ff3b00;padding:10px 20px;border-radius:4px;animation:ngRise .4s .15s cubic-bezier(.2,.8,.2,1) both">{{ resultLabel }}</span>
+<span style="font-size:24px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#888">{{ resultInput }} →</span>
+</div>
+<div style="font-size:140px;font-weight:900;line-height:.98;letter-spacing:-3px;text-transform:uppercase;margin-top:28px;color:#ff3b00;overflowWrap:break-word;animation:ngSlam .55s cubic-bezier(.16,1,.3,1) both">{{ resultName }}</div>
+<div style="font-size:32px;font-weight:700;line-height:1.35;color:#fff;margin-top:32px;animation:ngRise .5s .35s cubic-bezier(.2,.8,.2,1) both">{{ resultNote }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ showInput }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:16px;margin-top:48px;flex-wrap:wrap;align-items:center">
+<input id="ng-name" value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" placeholder="Type a name…" autoComplete="off" spellCheck="{{ false }}" style="flex:1;min-width:320px;boxSizing:border-box;font-family:'Arial Black',Arial,sans-serif;font-size:34px;font-weight:900;color:#fff;background:#1a1a1a;border:2px solid #2a2a2a;border-radius:8px;padding:22px 26px" />
+<button type="button" onClick="{{ go }}" style="font-family:'Arial Black',Arial,sans-serif;font-size:30px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:#ff3b00;color:#fff;border:0;border-radius:8px;padding:24px 40px;cursor:pointer" style-hover="background:#ff5522" style-active="background:#d63200">Run it</button>
+<button type="button" onClick="{{ clear }}" title="Clear the screen (Esc)" style="font-family:'Arial Black',Arial,sans-serif;font-size:22px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:transparent;color:#777;border:2px solid #2a2a2a;border-radius:8px;padding:22px 30px;cursor:pointer" style-hover="color:#fff;border-color:#444" style-active="color:#ff3b00;border-color:#ff3b00">Clear</button>
+<button type="button" onClick="{{ resetNight }}" title="Reset tonight's count, ticker and hall of fame" style="font-family:'Arial Black',Arial,sans-serif;font-size:22px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:transparent;color:#3d3d3d;border:2px solid #1f1f1f;border-radius:8px;padding:22px 26px;cursor:pointer" style-hover="color:#888;border-color:#333" style-active="color:#ff3b00;border-color:#ff3b00">Reset night</button>
+</div>
+</sc-if>
+</div>
+
+<div style="position:absolute;left:0;right:0;bottom:0;boxSizing:border-box;background:linear-gradient(0deg,rgba(13,13,13,.97) 60%,transparent 100%);padding:40px 40px 36px;display:flex;flex-direction:column;gap:20px">
+<sc-if value="{{ showLeaderboard }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;gap:18px;min-width:0">
+<span style="font-size:18px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:#ff3b00;white-space:nowrap">Hall of fame</span>
+<div style="display:flex;gap:12px;flex-wrap:nowrap;overflow:hidden;flex:1;min-width:0;padding-right:20px;maskImage:linear-gradient(90deg,#000 86%,transparent);WebkitMaskImage:linear-gradient(90deg,#000 86%,transparent)">
+<sc-for list="{{ leaders }}" as="l" hint-placeholder-count="3">
+<span style="display:inline-flex;align-items:center;gap:12px;background:#1f0a00;border:1px solid #4a1a06;border-radius:6px;padding:12px 18px;white-space:nowrap;animation:ngRise .4s cubic-bezier(.2,.8,.2,1) both"><span style="font-size:18px;font-weight:900;color:#ff3b00">{{ l.rank }}</span><span style="font-size:20px;font-weight:900;text-transform:uppercase;color:#fff">{{ l.name }}</span><span style="font-family:'Courier New',monospace;font-size:17px;color:#888">×{{ l.hits }}</span></span>
+</sc-for>
+</div>
+</div>
+</sc-if>
+<div style="display:flex;align-items:center;gap:18px;border-top:1px solid #1e1e1e;padding-top:20px;min-width:0">
+<span style="font-size:18px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:#444;white-space:nowrap">Called tonight</span>
+<div style="display:flex;gap:12px;flex-wrap:nowrap;overflow:hidden;flex:1;min-width:0;padding-right:20px;maskImage:linear-gradient(90deg,#000 86%,transparent);WebkitMaskImage:linear-gradient(90deg,#000 86%,transparent)">
+<sc-for list="{{ history }}" as="h" hint-placeholder-count="4">
+<span style="display:inline-flex;align-items:center;gap:10px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px 18px;white-space:nowrap;animation:ngRise .4s cubic-bezier(.2,.8,.2,1) both"><span style="font-size:19px;font-weight:900;text-transform:uppercase;color:#fff">{{ h.name }}</span><span style="font-family:'Courier New',monospace;font-size:16px;color:#666">{{ h.input }}</span></span>
+</sc-for>
+</div>
+<span style="display:inline-flex;align-items:center;gap:12px;background:#ff3b00;border-radius:6px;padding:12px 20px;white-space:nowrap"><span style="font-size:16px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#fff">Follow</span><span style="font-size:22px;font-weight:900;color:#fff">{{ handle }}</span></span>
+</div>
+<div style="display:flex;align-items:center;gap:14px;font-size:15px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#333"><span style="width:10px;height:10px;border-radius:50%;background:{{ connColor }}"></span>{{ connLabel }}</div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1080,&quot;height&quot;:1920},&quot;handle&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;@keonijupgrade&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Overlay&quot;},&quot;showInput&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Overlay&quot;},&quot;showLeaderboard&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Overlay&quot;},&quot;spinMs&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1400,&quot;min&quot;:400,&quot;max&quot;:3000,&quot;step&quot;:100,&quot;unit&quot;:&quot;ms&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Overlay&quot;}}">
+const STORE = "kjl-namegen-v2";
+
+class Component extends DCLogic {
+  state = { input: "", phase: "idle", reelName: "Kawika", result: null, history: [], count: 0, votes: {}, conn: "off" };
+
+  componentDidMount() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE) || "null");
+      if (saved) this.setState({
+        history: Array.isArray(saved.history) ? saved.history : [],
+        count: saved.count || 0,
+        votes: saved.votes || {}
+      });
+    } catch (e) {}
+    this.connect();
+  }
+  componentWillUnmount() {
+    clearInterval(this._spin); clearTimeout(this._stop);
+    if (this._ch) { try { this._ch.unsubscribe(); } catch (e) {} }
+  }
+
+  // Same Supabase project + channel the show overlay already uses; separate event name.
+  connect() {
+    const url = this.props.supabaseUrl ?? "https://yznpnwkgqqavfnllzmxd.supabase.co";
+    const key = this.props.supabaseKey ?? "sb_publishable_cPrO57tuEyTU6pQ6hXGwRg_lhB5XRf-";
+    if (!window.supabase || !url || !key) return;
+    try {
+      const sb = window.supabase.createClient(url, key);
+      const ch = sb.channel("keonij-overlay");
+      ch.on("broadcast", { event: "namegen" }, ({ payload }) => {
+        if (!payload) return;
+        if (payload.type === "clear") return this.setState({ phase: "idle", result: null });
+        if (payload.type === "love") return this.voteUp();
+        if (payload.type === "reset") {
+          try { localStorage.removeItem(STORE); } catch (e) {}
+          return this.setState({ history: [], count: 0, votes: {}, phase: "idle", result: null });
+        }
+        if (payload.name) this.run(payload.name);
+      }).subscribe((status) => {
+        this.setState({ conn: status === "SUBSCRIBED" ? "on" : (status === "CHANNEL_ERROR" || status === "TIMED_OUT" ? "err" : "off") });
+      });
+      this._ch = ch;
+    } catch (e) { this.setState({ conn: "err" }); }
+  }
+
+  save(patch) {
+    const s = Object.assign({ history: this.state.history, count: this.state.count, votes: this.state.votes }, patch);
+    try { localStorage.setItem(STORE, JSON.stringify(s)); } catch (e) {}
+  }
+
+  run(raw) {
+    const gen = window.NAMEGEN;
+    if (!gen) return;
+    const result = gen.lookup(raw);
+    if (!result) return;
+    const pool = gen.reelPool;
+    clearInterval(this._spin); clearTimeout(this._stop);
+    this.setState({ phase: "spin" });
+    this._spin = setInterval(() => {
+      this.setState({ reelName: pool[Math.floor(Math.random() * pool.length)] });
+    }, 90);
+    this._stop = setTimeout(() => {
+      clearInterval(this._spin);
+      const history = [result, ...this.state.history].slice(0, 6);
+      const count = this.state.count + 1;
+      this.save({ history, count });
+      this.setState({ phase: "result", result, history, count, input: "" });
+      const el = document.getElementById("ng-name");
+      if (el) el.focus();
+    }, Math.max(400, Number(this.props.spinMs ?? 1400)));
+  }
+
+  go = () => this.run(this.state.input);
+
+  clear = () => {
+    clearInterval(this._spin); clearTimeout(this._stop);
+    this.setState({ phase: "idle", result: null, input: "" });
+    const el = document.getElementById("ng-name");
+    if (el) el.focus();
+  };
+
+  resetNight = () => {
+    clearInterval(this._spin); clearTimeout(this._stop);
+    try { localStorage.removeItem(STORE); } catch (e) {}
+    this.setState({ history: [], count: 0, votes: {}, phase: "idle", result: null, input: "" });
+  };
+
+  voteUp = () => {
+    const r = this.state.result;
+    if (!r) return;
+    const votes = Object.assign({}, this.state.votes);
+    votes[r.name] = (votes[r.name] || 0) + 1;
+    this.save({ votes });
+    this.setState({ votes });
+  };
+
+  renderVals() {
+    const s = this.state, r = s.result;
+    const leaders = Object.keys(s.votes)
+      .map((name) => ({ name, hits: s.votes[name] }))
+      .sort((a, b) => b.hits - a.hits)
+      .slice(0, 3)
+      .map((l, i) => ({ name: l.name, hits: l.hits, rank: "#" + (i + 1) }));
+    return {
+      input: s.input,
+      onInput: (e) => this.setState({ input: e.target.value }),
+      onKey: (e) => {
+        if (e.key === "Enter") this.go();
+        if (e.key === "Escape") this.clear();
+      },
+      go: this.go,
+      clear: this.clear,
+      resetNight: this.resetNight,
+      isIdle: s.phase === "idle",
+      isSpinning: s.phase === "spin",
+      hasResult: s.phase === "result" && !!r,
+      reelName: s.reelName,
+      resultName: r ? r.name : "",
+      resultInput: r ? r.input : "",
+      resultNote: r ? r.note : "",
+      resultLabel: r ? (r.kind === "hawaiian" ? "Real Hawaiian name" : "Local pidgin name") : "",
+      history: s.history,
+      count: s.count,
+      leaders,
+      showLeaderboard: (this.props.showLeaderboard ?? true) && leaders.length > 0,
+      showInput: this.props.showInput ?? true,
+      handle: this.props.handle ?? "@keonijupgrade",
+      connColor: s.conn === "on" ? "#00cc66" : (s.conn === "err" ? "#ff3b00" : "#333"),
+      connLabel: s.conn === "on" ? "Phone control connected" : (s.conn === "err" ? "Control offline — refresh" : "Connecting…")
+    };
+  }
+}
+
+</script>
+</body>
+</html>

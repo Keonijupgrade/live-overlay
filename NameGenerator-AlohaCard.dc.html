@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-3e999c8b-45cb-43a6-b3d9-5d8989f473d0/styles.css" />
+<script src="_ds/organic-3e999c8b-45cb-43a6-b3d9-5d8989f473d0/_ds_bundle.js"></script>
+<script src="names.js"></script>
+<title>Local Name Generator — Aloha Card</title>
+<style>html,body{margin:0!important;padding:0!important;background:var(--color-bg)!important;color:var(--color-text)!important;overflow:hidden!important}a{color:var(--color-accent-700)}a:hover{color:var(--color-accent)}
+@keyframes alcFloat{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-2vw,2vh,0) scale(1.08)}}
+@keyframes alcCardIn{0%{transform:translateY(6vh) rotate(-3deg) scale(.9);opacity:0}60%{transform:translateY(0) rotate(.8deg) scale(1.02);opacity:1}100%{transform:translateY(0) rotate(0) scale(1);opacity:1}}
+@keyframes alcStamp{0%{transform:scale(2.6) rotate(-16deg);opacity:0}55%{transform:scale(.95) rotate(-9deg);opacity:1}75%{transform:scale(1.06) rotate(-11deg)}100%{transform:scale(1) rotate(-10deg);opacity:1}}
+@keyframes alcRise{0%{transform:translateY(2.4vh);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes alcScan{0%{transform:translateX(-100%)}100%{transform:translateX(220%)}}
+@keyframes alcBlink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes alcSpinSlow{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+</style>
+</helmet>
+<div style="position:relative;width:100vw;height:100vh;overflow:hidden;background:var(--color-bg);display:grid;grid-template-columns:1.15fr 1fr">
+<div style="position:absolute;right:-8vw;top:-14vh;width:44vw;height:44vw;border-radius:999px;background:var(--color-accent-2-200);opacity:.55;animation:alcFloat 26s ease-in-out infinite;pointer-events:none"></div>
+<div style="position:absolute;left:-10vw;bottom:-18vh;width:34vw;height:34vw;border-radius:999px;background:var(--color-accent-200);opacity:.5;animation:alcFloat 19s ease-in-out infinite reverse;pointer-events:none"></div>
+
+<section style="position:relative;display:flex;flex-direction:column;padding:5vh 3.6vw 4vh;min-width:0;max-width:100%">
+<div style="display:flex;align-items:center;gap:1vw">
+<span style="display:inline-flex;align-items:center;gap:.6vw;font-family:var(--font-body);font-size:1vw;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700);background:var(--color-accent-100);border-radius:999px;padding:.9vh 1.3vw"><span style="width:.7vw;height:.7vw;border-radius:999px;background:var(--color-accent);animation:alcBlink 1.5s ease-in-out infinite"></span>On air</span>
+<span style="font-family:var(--font-body);font-size:1vw;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-600)">Keoni J Live</span>
+</div>
+<h1 style="font-family:var(--font-heading);font-weight:400;font-size:5vw;line-height:.98;letter-spacing:-.02em;margin:3vh 0 0;max-width:16ch">Get your local name</h1>
+<p style="font-family:var(--font-body);font-size:1.35vw;line-height:1.5;color:var(--color-neutral-700);margin:2.4vh 0 0;max-width:34ch">Real Hawaiian name if you got one. If not, chat and I find you something you'll never live down.</p>
+
+<div style="margin:4vh 0 0;max-width:30vw">
+<label for="alc-name" style="display:block;font-family:var(--font-body);font-size:.95vw;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-600);margin:0 0 1.2vh">Name from chat</label>
+<div style="display:flex;gap:.8vw;flex-wrap:wrap">
+<input id="alc-name" class="input" value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" placeholder="e.g. David" autoComplete="off" spellCheck="{{ false }}" style="flex:1;min-width:14vw;font-size:1.5vw;padding:1.5vh 1.6vw" />
+<button type="button" class="btn btn-primary" onClick="{{ go }}" style="font-size:1.15vw;padding:1.6vh 2vw">Run it</button>
+</div>
+<p style="font-family:var(--font-body);font-size:1vw;line-height:1.5;color:var(--color-neutral-600);margin:1.6vh 0 0">Enter to run · Esc to clear · {{ dictCount }} real Hawaiian names loaded</p>
+</div>
+
+<div style="margin-top:auto;display:flex;align-items:end;gap:2vw">
+<div>
+<p style="font-family:var(--font-heading);font-size:3.2vw;line-height:1;color:var(--color-accent-700);margin:0">{{ count }}</p>
+<p style="font-family:var(--font-body);font-size:.95vw;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-600);margin:.8vh 0 0">Named tonight</p>
+</div>
+<sc-if value="{{ showWall }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-wrap:wrap;gap:.6vw;flex:1;justify-content:flex-end;align-content:flex-end;max-height:14vh;overflow:hidden">
+<sc-for list="{{ history }}" as="h" hint-placeholder-count="6">
+<span class="tag tag-outline" style="font-size:.95vw;padding:.8vh 1.2vw;white-space:nowrap;animation:alcRise .4s cubic-bezier(.2,.8,.2,1) both">{{ h.name }}</span>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</section>
+
+<section style="position:relative;display:grid;place-items:center;padding:5vh 3.6vw;min-width:0;max-width:100%">
+<sc-if value="{{ isIdle }}" hint-placeholder-val="{{ true }}">
+<div style="text-align:center;animation:alcRise .5s cubic-bezier(.2,.8,.2,1) both">
+<div style="width:22vw;height:22vw;border-radius:999px;border:.35vw dashed var(--color-accent-300);display:grid;place-items:center;margin:0 auto;animation:alcSpinSlow 40s linear infinite">
+<span style="font-family:var(--font-heading);font-size:2.4vw;color:var(--color-accent-400);animation:alcSpinSlow 40s linear infinite reverse">waiting</span>
+</div>
+<p style="font-family:var(--font-body);font-size:1.2vw;line-height:1.5;color:var(--color-neutral-600);margin:3vh 0 0;max-width:28ch">Type any name in chat and I'll put it on a card.</p>
+</div>
+</sc-if>
+<sc-if value="{{ isSpinning }}">
+<div style="width:34vw;max-width:100%;background:var(--color-neutral-100);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:4vh 2.6vw;text-align:center;position:relative;overflow:hidden">
+<p style="font-family:var(--font-body);font-size:1vw;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--color-accent-700);margin:0">Checking the family tree</p>
+<p style="font-family:var(--font-heading);font-size:3.4vw;line-height:1.05;margin:2.6vh 0 0;color:var(--color-neutral-500)">{{ reelName }}</p>
+<div style="position:absolute;inset:0;width:30%;background:linear-gradient(90deg,transparent,rgba(198,113,57,.22),transparent);animation:alcScan 1s linear infinite;pointer-events:none"></div>
+</div>
+</sc-if>
+<sc-if value="{{ hasResult }}">
+<div style="position:relative;width:36vw;max-width:100%;background:var(--color-neutral-100);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:4.4vh 2.8vw 4vh;animation:alcCardIn .6s cubic-bezier(.16,1,.3,1) both">
+<span style="position:absolute;right:-2vw;top:-2.4vh;font-family:var(--font-body);font-size:1vw;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-2-800);border:.28vw solid var(--color-accent-2-600);border-radius:999px;padding:1.1vh 1.5vw;background:var(--color-accent-2-100);animation:alcStamp .5s .35s cubic-bezier(.16,1,.3,1) both">{{ resultLabel }}</span>
+<p style="font-family:var(--font-body);font-size:1.05vw;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--color-neutral-600);margin:0">{{ resultInput }} becomes</p>
+<p style="font-family:var(--font-heading);font-size:5.4vw;line-height:1;letter-spacing:-.02em;margin:2vh 0 0;color:var(--color-accent-700);text-wrap:balance">{{ resultName }}</p>
+<p style="font-family:var(--font-body);font-size:1.35vw;line-height:1.5;color:var(--color-neutral-800);margin:2.8vh 0 0;animation:alcRise .5s .5s cubic-bezier(.2,.8,.2,1) both">{{ resultNote }}</p>
+<p style="font-family:var(--font-body);font-size:.95vw;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-500);margin:3vh 0 0">Screenshot it · tag the show</p>
+</div>
+</sc-if>
+</section>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showWall&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Overlay&quot;},&quot;spinMs&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1500,&quot;min&quot;:400,&quot;max&quot;:3000,&quot;step&quot;:100,&quot;unit&quot;:&quot;ms&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Overlay&quot;}}">
+class Component extends DCLogic {
+  state = { input: "", phase: "idle", reelName: "Kawika", result: null, history: [], count: 0 };
+
+  componentDidMount() {
+    try {
+      const saved = JSON.parse(localStorage.getItem("alc-namegen-v1") || "null");
+      if (saved && Array.isArray(saved.history)) this.setState({ history: saved.history, count: saved.count || 0 });
+    } catch (e) {}
+    const el = document.getElementById("alc-name");
+    if (el) el.focus();
+  }
+  componentWillUnmount() { clearInterval(this._spin); clearTimeout(this._stop); }
+
+  go = () => {
+    const gen = window.NAMEGEN;
+    if (!gen) return;
+    const result = gen.lookup(this.state.input);
+    if (!result) return;
+    const pool = gen.reelPool;
+    clearInterval(this._spin); clearTimeout(this._stop);
+    this.setState({ phase: "spin" });
+    this._spin = setInterval(() => {
+      this.setState({ reelName: pool[Math.floor(Math.random() * pool.length)] });
+    }, 130);
+    const dur = Math.max(400, Number(this.props.spinMs ?? 1500));
+    this._stop = setTimeout(() => {
+      clearInterval(this._spin);
+      const history = [result, ...this.state.history].slice(0, 10);
+      const count = this.state.count + 1;
+      try { localStorage.setItem("alc-namegen-v1", JSON.stringify({ history, count })); } catch (e) {}
+      this.setState({ phase: "result", result, history, count, input: "" });
+      const el = document.getElementById("alc-name");
+      if (el) el.focus();
+    }, dur);
+  };
+
+  renderVals() {
+    const s = this.state, r = s.result;
+    return {
+      input: s.input,
+      onInput: (e) => this.setState({ input: e.target.value }),
+      onKey: (e) => {
+        if (e.key === "Enter") this.go();
+        if (e.key === "Escape") this.setState({ input: "", phase: "idle", result: null });
+      },
+      go: this.go,
+      isIdle: s.phase === "idle",
+      isSpinning: s.phase === "spin",
+      hasResult: s.phase === "result" && !!r,
+      reelName: s.reelName,
+      resultName: r ? r.name : "",
+      resultInput: r ? r.input : "",
+      resultNote: r ? r.note : "",
+      resultLabel: r ? (r.kind === "hawaiian" ? "Certified real" : "Pidgin issue") : "",
+      history: s.history,
+      count: s.count,
+      dictCount: (window.NAMEGEN && window.NAMEGEN.hawaiianCount) || 82,
+      showWall: this.props.showWall ?? true
+    };
+  }
+}
+
+</script>
+</body>
+</html>
