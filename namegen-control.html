@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KeoniJ — Name Generator Control</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d0d0d; color: #fff;
+    font-family: 'Arial Black', Arial, sans-serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px; gap: 20px;
+  }
+  h1 { font-size: 22px; color: #ff3b00; letter-spacing: 4px; text-transform: uppercase; text-align: center; }
+  .sub { font-size: 12px; color: #555; letter-spacing: 3px; text-transform: uppercase; text-align: center; margin-top: -12px; }
+
+  .panel {
+    background: #1a1a1a; border: 2px solid #ff3b00; border-radius: 8px;
+    padding: 18px; width: 100%; max-width: 420px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .panel-label { font-size: 11px; color: #ff3b00; letter-spacing: 4px; text-transform: uppercase; }
+  input[type="text"] {
+    width: 100%; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 6px;
+    color: #fff; font-family: inherit; font-size: 24px; font-weight: 900; padding: 16px 18px;
+  }
+  input[type="text"]:focus-visible { outline: 2px solid #ff3b00; outline-offset: 2px; }
+
+  .btn {
+    border: none; border-radius: 8px; padding: 18px;
+    font-family: inherit; font-size: 18px; font-weight: 900; letter-spacing: 2px;
+    cursor: pointer; text-transform: uppercase; transition: opacity 0.15s;
+  }
+  .btn:active { opacity: 0.7; }
+  .btn-run { background: #ff3b00; color: #fff; font-size: 20px; width: 100%; }
+  .row { display: flex; gap: 12px; width: 100%; max-width: 420px; }
+  .btn-ghost { flex: 1; background: transparent; border: 1px solid #333; color: #777; font-size: 14px; }
+  .btn-ghost:active { border-color: #ff3b00; color: #ff3b00; }
+
+  .queue-label { font-size: 11px; color: #444; letter-spacing: 4px; text-transform: uppercase; text-align: center; }
+  .queue { width: 100%; max-width: 420px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .chip {
+    background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 999px;
+    padding: 12px 18px; font-size: 15px; font-weight: 900; color: #fff; cursor: pointer;
+  }
+  .chip:active { border-color: #ff3b00; color: #ff3b00; }
+
+  .conn-status { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+  .conn-dot { width: 8px; height: 8px; border-radius: 50%; background: #333; }
+  .conn-dot.connected { background: #00cc66; box-shadow: 0 0 6px #00cc66; }
+  .conn-dot.error { background: #ff3b00; }
+  .status { font-size: 11px; color: #333; letter-spacing: 2px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<h1>Name Generator Control</h1>
+<p class="sub">Runs the overlay from your phone</p>
+
+<div class="panel">
+  <div class="panel-label">Name from chat</div>
+  <input type="text" id="name" placeholder="David" autocomplete="off" autocapitalize="words" spellcheck="false"/>
+  <button class="btn btn-run" onclick="run()">Run it &#8594;</button>
+</div>
+
+<div class="row">
+  <button class="btn btn-ghost" onclick="send({type:'love'})">&#9829; Chat loved it</button>
+  <button class="btn btn-ghost" onclick="send({type:'clear'})">Clear screen</button>
+</div>
+
+<div class="queue-label">Quick picks</div>
+<div class="queue" id="queue"></div>
+
+<div class="row">
+  <button class="btn btn-ghost" onclick="if(confirm('Reset tonight\'s counts?')) send({type:'reset'})">&#8635; Reset night</button>
+</div>
+
+<div class="conn-status">
+  <div class="conn-dot" id="conn-dot"></div>
+  <span id="conn-label">Connecting...</span>
+</div>
+<div class="status" id="status">Ready</div>
+
+<script>
+const SUPABASE_URL = 'https://yznpnwkgqqavfnllzmxd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_cPrO57tuEyTU6pQ6hXGwRg_lhB5XRf-';
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const channel = sb.channel('keonij-overlay');
+
+channel.subscribe((status) => {
+  const dot = document.getElementById('conn-dot');
+  const label = document.getElementById('conn-label');
+  if (status === 'SUBSCRIBED') {
+    dot.className = 'conn-dot connected';
+    label.textContent = 'Connected — overlay updates instantly';
+  } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+    dot.className = 'conn-dot error';
+    label.textContent = 'Connection error — refresh page';
+  }
+});
+
+async function send(payload) {
+  await channel.send({ type: 'broadcast', event: 'namegen', payload });
+  flash(payload.name ? '→ ' + payload.name : '→ ' + payload.type);
+}
+
+function run() {
+  const el = document.getElementById('name');
+  const name = el.value.trim();
+  if (!name) return;
+  send({ name });
+  el.value = '';
+  el.focus();
+}
+
+document.getElementById('name').addEventListener('keydown', (e) => { if (e.key === 'Enter') run(); });
+
+['David','John','Mary','James','Robert','Sarah','Michael','Tiffany'].forEach((n) => {
+  const b = document.createElement('button');
+  b.className = 'chip';
+  b.textContent = n;
+  b.onclick = () => send({ name: n });
+  document.getElementById('queue').appendChild(b);
+});
+
+function flash(msg) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.style.color = '#ff3b00';
+  setTimeout(() => { el.style.color = '#333'; el.textContent = 'Ready'; }, 1500);
+}
+</script>
+</body>
+</html>
