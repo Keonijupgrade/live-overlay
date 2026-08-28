@@ -65,7 +65,20 @@
   </section>
 
   <section>
-    <h2>4 · Clearing without the phone</h2>
+    <h2>4 · Updating it later</h2>
+    <p class="note" style="margin-bottom:18px">Every change I make gets re-exported into the same three filenames. Updating is always: replace the files, commit, done. GitHub Pages redeploys itself in about a minute.</p>
+    <ol>
+      <li><b></b>Easiest way (browser, no tools): open the repo → click the file (e.g. <code>namegen.html</code>) → pencil icon → select all → paste the new contents → <code>Commit changes</code>.</li>
+      <li><b></b>Drag-and-drop way: repo home → <code>Add file</code> → <code>Upload files</code> → drop the new <code>namegen.html</code>, <code>namegen-control.html</code>, <code>namegen-setup.html</code> in → it overwrites the old ones → <code>Commit changes</code>.</li>
+      <li><b></b>Command line, if you cloned it:<br/><code>git pull</code> → copy the new files over → <code>git add -A</code> → <code>git commit -m "update name generator"</code> → <code>git push</code></li>
+      <li>Check the deploy: repo → <code>Actions</code> tab. Green check = live.</li>
+      <li>In OBS, right-click the browser source → <code>Refresh</code> (or Properties → <code>Refresh cache of current page</code>) to pick up the new version. Same on your phone: pull down to reload.</li>
+    </ol>
+    <p class="note" style="margin-top:16px">Careful: OBS caches hard. If you don't see the change, hit Refresh cache of current page — that always does it.</p>
+  </section>
+
+  <section>
+    <h2>5 · Clearing without the phone</h2>
     <ul>
       <li>The overlay has its own <b></b>Clear and <b></b>Reset night buttons under the input.</li>
       <li><code>Esc</code> in the input clears the screen. <code>Enter</code> runs the name.</li>
