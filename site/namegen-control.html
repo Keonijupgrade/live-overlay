@@ -72,6 +72,11 @@
 </div>
 
 <div class="row">
+  <button class="btn btn-ghost" id="g-male" onclick="setGender('male')">Male</button>
+  <button class="btn btn-ghost" id="g-female" onclick="setGender('female')">Female</button>
+</div>
+
+<div class="row">
   <button class="btn btn-ghost" id="comic" onclick="toggleComic()">Comic mode: off</button>
 </div>
 
@@ -117,7 +122,7 @@ function run() {
   const el = document.getElementById('name');
   const name = el.value.trim();
   if (!name) return;
-  send({ name });
+  send({ name, gender });
   el.value = '';
   el.focus();
 }
@@ -128,9 +133,23 @@ document.getElementById('name').addEventListener('keydown', (e) => { if (e.key =
   const b = document.createElement('button');
   b.className = 'chip';
   b.textContent = n;
-  b.onclick = () => send({ name: n });
+  b.onclick = () => send({ name: n, gender });
   document.getElementById('queue').appendChild(b);
 });
+
+let gender = localStorage.getItem('kjl-namegen-gender') || 'male';
+function setGender(g) {
+  gender = g;
+  try { localStorage.setItem('kjl-namegen-gender', g); } catch (e) {}
+  ['male', 'female'].forEach((k) => {
+    const b = document.getElementById('g-' + k);
+    const on = k === g;
+    b.style.color = on ? '#ff3b00' : '#777';
+    b.style.borderColor = on ? '#ff3b00' : '#333';
+  });
+  send({ type: 'gender', value: g });
+}
+setGender(gender);
 
 let comicOn = false;
 function toggleComic() {
